@@ -20,7 +20,8 @@ public class Principal {
 
             switch (opcao) {
                 case "1":
-                    AdminFile.listarArquivos();
+                    AdminFile.listarArquivos( sc);
+
                     break;
                 case "2":
                     AdminFile.renomearArquivoOuPasta(sc);

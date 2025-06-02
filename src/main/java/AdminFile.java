@@ -1,67 +1,89 @@
 import java.io.File;
-import java.util.Scanner;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.Scanner;
 
 public class AdminFile {
-    private static final String[] PASTAS_PADRAO = {
-            System.getProperty("user.home") + "\\Documents",
-            System.getProperty("user.home") + "\\Videos",
-            System.getProperty("user.home") + "\\Pictures",
-            System.getProperty("user.home") + "\\Downloads"
-    };
 
-    public static void listarArquivos() {
-        System.out.println("Listando pastas padrão:");
-        for (String caminho : PASTAS_PADRAO) {
-            File pasta = new File(caminho);
-            if (pasta.exists() && pasta.isDirectory()) {
-                System.out.println("Conteúdo de: " + caminho);
-                File[] arquivos = pasta.listFiles();
-                if (arquivos != null) {
-                    for (File arquivo : arquivos) {
-                        System.out.println(" - " + arquivo.getName());
-                    }
-                } else {
-                    System.out.println(" (vazio)");
-                }
-            }
+    public static void listarArquivos(Scanner sc) {
+        System.out.println("Escolha uma unidade de armazenamento para listar os arquivos:");
+        File[] unidades = File.listRoots();
+        for (int i = 0; i < unidades.length; i++) {
+            System.out.println((i + 1) + ". " + unidades[i].getAbsolutePath());
         }
-        Usuario.registrarLog("Listagem de arquivos executada.");
-    }
 
-    public static void renomearArquivoOuPasta(Scanner sc) {
-        System.out.print("Informe o caminho completo do arquivo ou pasta que deseja renomear: ");
-        String caminhoOriginal = sc.nextLine();
-
-        File arquivoOriginal = new File(caminhoOriginal);
-        if (!arquivoOriginal.exists()) {
-            System.out.println("Arquivo ou pasta não encontrado.");
+        System.out.print("Digite o número da unidade desejada: ");
+        int escolhaUnidade;
+        try {
+            escolhaUnidade = Integer.parseInt(sc.nextLine());
+            if (escolhaUnidade < 1 || escolhaUnidade > unidades.length) {
+                System.out.println("Opção inválida.");
+                return;
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Entrada inválida.");
             return;
         }
 
-        System.out.print("Informe o novo nome (sem caminho, apenas o nome): ");
-        String novoNome = sc.nextLine();
+        File unidadeSelecionada = unidades[escolhaUnidade - 1];
+        System.out.println("Você escolheu: " + unidadeSelecionada.getAbsolutePath());
 
-        File novoArquivo = new File(arquivoOriginal.getParent(), novoNome);
+        System.out.println("\nDeseja filtrar por tipo de arquivo?");
+        System.out.println("1. Fotos (jpg, png, gif)");
+        System.out.println("2. Vídeos (mp4, avi, mkv)");
+        System.out.println("3. Documentos (pdf, docx, txt)");
+        System.out.println("4. Todos os arquivos");
+        System.out.print("Escolha uma opção: ");
+        String opcaoFiltro = sc.nextLine();
 
-        boolean sucesso = arquivoOriginal.renameTo(novoArquivo);
-
-        if (sucesso) {
-            System.out.println("Renomeado com sucesso para: " + novoArquivo.getPath());
-            Usuario.registrarLog("Renomeado: " + caminhoOriginal + " -> " + novoArquivo.getPath());
-        } else {
-            System.out.println("Falha ao renomear.");
-            Usuario.registrarLog("Erro ao renomear: " + caminhoOriginal);
+        String[] extensoes = null;
+        switch (opcaoFiltro) {
+            case "1":
+                AdminFile.listarArquivos(sc); // Adicione o parâmetro Scanner
+                break;
+            case "2":
+                extensoes = new String[] {".mp4", ".avi", ".mkv"};
+                break;
+            case "3":
+                extensoes = new String[] {".pdf", ".docx", ".txt"};
+                break;
+            case "4":
+                // Sem filtro
+                break;
+            default:
+                System.out.println("Opção inválida.");
+                return;
         }
+
+        System.out.println("\nListando arquivos em: " + unidadeSelecionada.getAbsolutePath());
+        File[] arquivos = unidadeSelecionada.listFiles();
+        if (arquivos != null) {
+            for (File arquivo : arquivos) {
+                if (extensoes == null || correspondeExtensao(arquivo.getName(), extensoes)) {
+                    System.out.println(" - " + arquivo.getName());
+                }
+            }
+        } else {
+            System.out.println("Não foi possível acessar os arquivos.");
+        }
+    }
+
+    private static boolean correspondeExtensao(String nomeArquivo, String[] extensoes) {
+        for (String extensao : extensoes) {
+            if (nomeArquivo.toLowerCase().endsWith(extensao)) {
+                return true;
+            }
+        }
+        return false;
     }
     public static void moverArquivo(Scanner sc) {
         System.out.print("Informe o caminho completo do arquivo que deseja mover: ");
         String origem = sc.nextLine();
         File arquivoOrigem = new File(origem);
 
-        if (!arquivoOrigem.exists()) {
-            System.out.println("Arquivo não encontrado.");
+        if (!arquivoOrigem.exists() || !arquivoOrigem.isFile()) {
+            System.out.println("Arquivo não encontrado ou não é um arquivo válido.");
             return;
         }
 
@@ -74,88 +96,95 @@ public class AdminFile {
             Files.move(arquivoOrigem.toPath(), novoArquivo.toPath(), StandardCopyOption.REPLACE_EXISTING);
             System.out.println("Arquivo movido para: " + novoArquivo.getPath());
             Usuario.registrarLog("Arquivo movido de " + origem + " para " + novoArquivo.getPath());
-        } catch (Exception e) {
+        } catch (IOException e) {
             System.out.println("Erro ao mover o arquivo: " + e.getMessage());
             Usuario.registrarLog("Erro ao mover arquivo de " + origem + " para " + pastaDestino.getPath());
         }
     }
 
 
+
+
+
+    public static void renomearArquivoOuPasta(Scanner sc) {
+        System.out.print("Informe o caminho completo do arquivo ou pasta que deseja renomear: ");
+        String caminhoAtual = sc.nextLine();
+        File arquivoAtual = new File(caminhoAtual);
+
+        if (!arquivoAtual.exists()) {
+            System.out.println("Erro: Arquivo ou pasta não encontrado.");
+            return;
+        }
+
+        System.out.print("Informe o novo nome (sem o caminho): ");
+        String novoNome = sc.nextLine();
+        File novoArquivo = new File(arquivoAtual.getParent(), novoNome);
+
+        if (novoArquivo.exists()) {
+            System.out.println("Erro: Já existe um arquivo ou pasta com esse nome.");
+            return;
+        }
+
+        if (arquivoAtual.renameTo(novoArquivo)) {
+            System.out.println("Renomeado com sucesso para: " + novoArquivo.getPath());
+            Usuario.registrarLog("Renomeado: " + caminhoAtual + " para " + novoArquivo.getPath());
+        } else {
+            System.out.println("Erro ao renomear. Verifique se o arquivo está em uso ou se você tem permissões suficientes.");
+        }
+    }
+    // Método para copiar arquivo
     public static void copiarArquivo(Scanner sc) {
-        System.out.print("Informe o caminho completo do arquivo que deseja copiar: ");
+        System.out.print("Informe o caminho do arquivo que deseja copiar: ");
         String origem = sc.nextLine();
         File arquivoOrigem = new File(origem);
 
         if (!arquivoOrigem.exists() || !arquivoOrigem.isFile()) {
-            System.out.println("Arquivo não encontrado ou não é um arquivo válido.");
+            System.out.println("Arquivo não encontrado ou inválido.");
             return;
         }
 
         File pastaDestino = solicitarDiretorioDestino(sc);
         if (pastaDestino == null) return;
 
-        File arquivoDestino = new File(pastaDestino, arquivoOrigem.getName());
+        File novoArquivo = new File(pastaDestino, arquivoOrigem.getName());
 
         try {
-            Files.copy(arquivoOrigem.toPath(), arquivoDestino.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            System.out.println("Arquivo copiado para: " + arquivoDestino.getPath());
-            Usuario.registrarLog("Arquivo copiado de " + origem + " para " + arquivoDestino.getPath());
-        } catch (Exception e) {
+            Files.copy(arquivoOrigem.toPath(), novoArquivo.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            System.out.println("Arquivo copiado para: " + novoArquivo.getPath());
+            Usuario.registrarLog("Arquivo copiado de " + origem + " para " + novoArquivo.getPath());
+        } catch (IOException e) {
             System.out.println("Erro ao copiar o arquivo: " + e.getMessage());
-            Usuario.registrarLog("Erro ao copiar arquivo de " + origem + " para " + pastaDestino.getPath());
         }
     }
 
+    // Método para excluir arquivo ou pasta
     public static void excluirArquivoOuPasta(Scanner sc) {
-        System.out.print("Informe o caminho completo do arquivo ou pasta que deseja excluir: ");
+        System.out.print("Informe o caminho do arquivo ou pasta que deseja excluir: ");
         String caminho = sc.nextLine();
-        File alvo = new File(caminho);
+        File arquivo = new File(caminho);
 
-        if (!alvo.exists()) {
+        if (!arquivo.exists()) {
             System.out.println("Arquivo ou pasta não encontrado.");
             return;
         }
 
-        boolean sucesso;
-        if (alvo.isDirectory()) {
-            sucesso = excluirDiretorioRecursivo(alvo);
-        } else {
-            sucesso = alvo.delete();
-        }
-
-        if (sucesso) {
-            System.out.println("Exclusão concluída.");
-            Usuario.registrarLog("Excluído: " + caminho);
-        } else {
-            System.out.println("Erro ao excluir.");
-            Usuario.registrarLog("Erro ao excluir: " + caminho);
-        }
-    }
-
-    private static boolean excluirDiretorioRecursivo(File pasta) {
-        File[] arquivos = pasta.listFiles();
-        if (arquivos != null) {
-            for (File f : arquivos) {
-                if (f.isDirectory()) {
-                    excluirDiretorioRecursivo(f);
-                } else {
-                    boolean deletado = f.delete();
-                    if (!deletado) {
-                        System.out.println("Não foi possível excluir o arquivo: " + f.getAbsolutePath());
-                        Usuario.registrarLog("Erro ao excluir arquivo: " + f.getAbsolutePath());
-                    }
-                }
+        if (arquivo.isDirectory()) {
+            String[] conteudo = arquivo.list();
+            if (conteudo == null || conteudo.length > 0) {
+                System.out.println("A pasta não está vazia ou ocorreu um erro ao acessá-la.");
+                return;
             }
         }
 
-        boolean deletado = pasta.delete();
-        if (!deletado) {
-            System.out.println("Não foi possível excluir a pasta: " + pasta.getAbsolutePath());
-            Usuario.registrarLog("Erro ao excluir pasta: " + pasta.getAbsolutePath());
+        if (arquivo.delete()) {
+            System.out.println("Excluído com sucesso: " + caminho);
+            Usuario.registrarLog("Excluído: " + caminho);
+        } else {
+            System.out.println("Erro ao excluir.");
         }
-
-        return deletado;
     }
+
+    // Método auxiliar para solicitar diretório de destino
     private static File solicitarDiretorioDestino(Scanner sc) {
         System.out.print("Informe o diretório de destino (apenas o caminho da pasta): ");
         String destinoDiretorio = sc.nextLine();
@@ -168,6 +197,4 @@ public class AdminFile {
 
         return pastaDestino;
     }
-
 }
-
