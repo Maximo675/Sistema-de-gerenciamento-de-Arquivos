@@ -7,3 +7,13 @@
 [2025-05-30 19:44:52] Listagem de arquivos executada.
 [2025-05-30 19:46:10] Listagem de arquivos executada.
 [2025-05-30 19:50:32] Listagem de arquivos executada.
+[2025-06-03 14:54:50] Listados arquivos em: C:\
+[2025-06-03 14:56:00] Listados arquivos em: C:\Users\maxim\Documents
+[2025-06-03 14:56:00] Listados arquivos em: C:\Users\maxim\Videos
+[2025-06-03 14:56:00] Listados arquivos em: C:\Users\maxim\Downloads
+[2025-06-03 16:38:04] [Usuário: maxim] [Ação: Abrir Arquivo (Falha)] Arquivo não encontrado para abrir: C:\Users\maxim\WhatsApp Image 2025-04-28 at 12.46.50.jpeg no diretório: C:\
+[2025-06-03 16:38:24] [Usuário: maxim] [Ação: Renomear (Falha)] Arquivo ou pasta não encontrado: C:\Users\maxim\WhatsApp Image 2025-04-28 at 12.46.50.jpeg
+[2025-06-03 16:42:17] [Usuário: maxim] [Ação: Abrir Arquivo (Falha)] Tentou abrir uma pasta: C:\
+[2025-06-03 16:43:22] [Usuário: maxim] [Ação: Listar/Abrir (Falha)] Pasta padrão selecionada inválida/não existe: Pictures
+[2025-06-03 16:43:42] [Usuário: maxim] [Ação: Listar/Abrir (Informação)] Não há itens ou diretório não selecionado para abrir.
+[2025-06-03 16:43:51] [Usuário: maxim] [Ação: Listar/Abrir (Informação)] Não há itens ou diretório não selecionado para abrir.
